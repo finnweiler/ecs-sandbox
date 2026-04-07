@@ -1,6 +1,6 @@
 {
   "name": "@ecs-sandbox/sdk",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "TypeScript client SDK for ecs-sandbox — provider-agnostic core with ECS lifecycle adapter",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,5 +24,9 @@
     "@aws-sdk/client-servicediscovery": "^3.0.0"
   },
   "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finnweiler/ecs-sandbox"
+  },
   "license": "MIT"
 }
