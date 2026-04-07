@@ -24,5 +24,9 @@
     "@aws-sdk/client-servicediscovery": "^3.0.0"
   },
   "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finnweiler/ecs-sandbox"
+  },
   "license": "MIT"
 }
