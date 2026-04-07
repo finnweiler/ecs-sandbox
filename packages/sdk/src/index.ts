@@ -18,3 +18,6 @@ export type {
 // Providers
 export { EcsSandboxManager } from './providers/ecs.js';
 export type { EcsSandboxManagerConfig } from './providers/ecs.js';
+
+// Tools
+export { createSandboxTools } from './tools/strands.js';

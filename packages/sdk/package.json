@@ -11,17 +11,23 @@
   "dependencies": {},
   "peerDependencies": {
     "@aws-sdk/client-ecs": "^3.0.0",
-    "@aws-sdk/client-servicediscovery": "^3.0.0"
+    "@aws-sdk/client-servicediscovery": "^3.0.0",
+    "@strands-agents/sdk": "^0.1.0",
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-ecs": { "optional": true },
-    "@aws-sdk/client-servicediscovery": { "optional": true }
+    "@aws-sdk/client-servicediscovery": { "optional": true },
+    "@strands-agents/sdk": { "optional": true },
+    "zod": { "optional": true }
   },
   "devDependencies": {
     "typescript": "^5.5.0",
     "@types/node": "^22.0.0",
     "@aws-sdk/client-ecs": "^3.0.0",
-    "@aws-sdk/client-servicediscovery": "^3.0.0"
+    "@aws-sdk/client-servicediscovery": "^3.0.0",
+    "@strands-agents/sdk": "^0.1.0",
+    "zod": "^4.0.0"
   },
   "files": ["dist"],
   "repository": {

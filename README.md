@@ -35,13 +35,22 @@ AI agents that interact with code repositories need isolated environments — on
 | `@ecs-sandbox/server` | The sandbox container — a Fastify HTTP server exposing exec, filesystem, and health APIs |
 | `@ecs-sandbox/sdk` | TypeScript client SDK with a provider-agnostic core and an ECS lifecycle adapter |
 
-## Quick Start
-
-### Run the sandbox container locally
+## Installation
 
 ```bash
-docker build -t ecs-sandbox ./packages/sandbox-server
-docker run -p 3000:3000 ecs-sandbox
+npm install @ecs-sandbox/sdk
+```
+
+```bash
+docker pull finnweiler/ecs-sandbox
+```
+
+## Quick Start
+
+### Run the sandbox container
+
+```bash
+docker run -p 3000:3000 finnweiler/ecs-sandbox
 ```
 
 ### Use the SDK
@@ -87,6 +96,22 @@ const result = await sandbox.exec('cd /workspace && npm test');
 // Tear it down
 await manager.destroy('project-alpha');
 ```
+
+### With Strands Agents
+
+```typescript
+import { Agent } from '@strands-agents/sdk';
+import { SandboxClient, createSandboxTools } from '@ecs-sandbox/sdk';
+
+const client = new SandboxClient('http://localhost:3000');
+const agent = new Agent({
+  tools: [...createSandboxTools(client)],
+});
+
+await agent.invoke('Clone the repo and run the tests');
+```
+
+`createSandboxTools` returns four tools: `sandbox_exec`, `sandbox_read_file`, `sandbox_write_file`, and `sandbox_remove_file`. Requires `@strands-agents/sdk` and `zod` as peer dependencies.
 
 ## API Reference
 
