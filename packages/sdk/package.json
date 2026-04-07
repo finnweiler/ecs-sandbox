@@ -1,0 +1,28 @@
+{
+  "name": "@ecs-sandbox/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript client SDK for ecs-sandbox — provider-agnostic core with ECS lifecycle adapter",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@aws-sdk/client-ecs": "^3.0.0",
+    "@aws-sdk/client-servicediscovery": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-ecs": { "optional": true },
+    "@aws-sdk/client-servicediscovery": { "optional": true }
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0",
+    "@aws-sdk/client-ecs": "^3.0.0",
+    "@aws-sdk/client-servicediscovery": "^3.0.0"
+  },
+  "files": ["dist"],
+  "license": "MIT"
+}
