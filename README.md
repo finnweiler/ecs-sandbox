@@ -15,7 +15,7 @@ AI agents that interact with code repositories need isolated environments — on
 │                              │
 │  const sandbox = await       │
 │    manager.create("proj-a")  │
-│  sandbox.exec("git clone")  │
+│  sandbox.exec("git clone")   │
 │  sandbox.files.read("src/")  │
 └──────────┬───────────────────┘
            │ HTTP (VPC-internal)
