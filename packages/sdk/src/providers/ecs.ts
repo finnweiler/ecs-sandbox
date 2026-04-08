@@ -74,10 +74,22 @@ export class EcsSandboxManager {
     options?: {
       env?: Record<string, string>;
       taskDefinition?: string;
+      /** If true, reuse an existing sandbox with this ID instead of failing */
+      reuse?: boolean;
     },
   ): Promise<SandboxClient> {
-    if (this.sandboxes.has(sandboxId)) {
-      throw new Error(`Sandbox "${sandboxId}" already exists. Destroy it first or use a different ID.`);
+    // Check if a task with this sandbox ID is already running in ECS
+    const existing = await this.findTask(sandboxId);
+    if (existing) {
+      if (!options?.reuse) {
+        throw new Error(`Sandbox "${sandboxId}" already exists. Destroy it first or pass { reuse: true }.`);
+      }
+      const ip = await this.getTaskIp(existing);
+      const url = `http://${ip}:${this.config.containerPort}`;
+      const client = new SandboxClient(url, this.config.clientOptions);
+      await client.waitForReady(10_000);
+      this.sandboxes.set(sandboxId, { taskArn: existing, client });
+      return client;
     }
 
     const envOverrides: KeyValuePair[] = [
@@ -247,6 +259,35 @@ export class EcsSandboxManager {
     }
 
     return privateIp;
+  }
+
+  /**
+   * Find a running ECS task tagged with the given sandbox ID.
+   */
+  private async findTask(sandboxId: string): Promise<string | null> {
+    const listResult = await this.ecs.send(
+      new ListTasksCommand({
+        cluster: this.config.cluster,
+        desiredStatus: 'RUNNING',
+      }),
+    );
+
+    const taskArns = listResult.taskArns;
+    if (!taskArns || taskArns.length === 0) return null;
+
+    const descResult = await this.ecs.send(
+      new DescribeTasksCommand({
+        cluster: this.config.cluster,
+        tasks: taskArns,
+        include: ['TAGS'],
+      }),
+    );
+
+    const match = descResult.tasks?.find((task) =>
+      task.tags?.some((tag) => tag.key === 'ecs-sandbox:id' && tag.value === sandboxId),
+    );
+
+    return match?.taskArn ?? null;
   }
 
   private async discoverViaSd(sandboxId: string): Promise<string> {
