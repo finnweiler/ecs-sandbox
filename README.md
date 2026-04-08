@@ -113,6 +113,32 @@ await agent.invoke('Clone the repo and run the tests');
 
 `createSandboxTools` returns four tools: `sandbox_exec`, `sandbox_read_file`, `sandbox_write_file`, and `sandbox_remove_file`. Requires `@strands-agents/sdk` and `zod` as peer dependencies.
 
+### With GitHub App Authentication
+
+Authenticate the `gh` CLI and `git` inside a sandbox using a GitHub App. The private key stays in your agent's process — only short-lived installation tokens are sent to the sandbox.
+
+```typescript
+import { SandboxClient, setupGitHubAuth } from '@ecs-sandbox/sdk';
+import { readFileSync } from 'fs';
+
+const client = new SandboxClient('http://localhost:3000');
+
+const auth = await setupGitHubAuth(client, {
+  appId: '123456',
+  installationId: '78901234',
+  privateKey: readFileSync('private-key.pem', 'utf-8'),
+});
+
+// gh and git are now authenticated inside the sandbox
+await client.exec('gh repo clone org/private-repo /workspace');
+await client.exec('cd /workspace && git push');
+
+// Stop the automatic token refresh when done
+auth.stop();
+```
+
+Tokens are refreshed automatically every 50 minutes (GitHub installation tokens expire after 1 hour). Call `auth.refresh()` to force an immediate refresh.
+
 ## API Reference
 
 ### Sandbox Server Endpoints
@@ -124,6 +150,7 @@ await agent.invoke('Clone the repo and run the tests');
 | `GET` | `/files` | Read file or list directory |
 | `POST` | `/files` | Write file |
 | `DELETE` | `/files` | Delete file or directory |
+| `POST` | `/env` | Set environment variables |
 | `GET` | `/health` | Health check |
 
 ### POST /exec

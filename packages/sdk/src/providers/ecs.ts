@@ -166,6 +166,8 @@ export class EcsSandboxManager {
       throw new Error(`Sandbox "${sandboxId}" not found.`);
     }
 
+    entry.client.destroy();
+
     await this.ecs.send(
       new StopTaskCommand({
         cluster: this.config.cluster,

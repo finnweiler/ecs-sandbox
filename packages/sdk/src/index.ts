@@ -21,3 +21,7 @@ export type { EcsSandboxManagerConfig } from './providers/ecs.js';
 
 // Tools
 export { createSandboxTools } from './tools/strands.js';
+
+// GitHub Auth
+export { setupGitHubAuth } from './services/github-auth.js';
+export type { GitHubAuthConfig, GitHubAuthHandle } from './services/github-auth.js';

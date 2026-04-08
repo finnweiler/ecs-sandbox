@@ -35,6 +35,7 @@ This is a monorepo (`npm workspaces`) with two packages:
 - `src/core/client.ts`: `SandboxClient` — generic HTTP client for any running sandbox. Handles exec, streaming exec (SSE), and file CRUD.
 - `src/core/types.ts`: Shared request/response types used by both client and server.
 - `src/providers/ecs.ts`: `EcsSandboxManager` — AWS-specific lifecycle management. Creates Fargate tasks, waits for them to become healthy, discovers their IPs (directly via ECS ENI or via Cloud Map), and destroys them. AWS SDK packages are optional peer dependencies.
+- `src/services/github-auth.ts`: `setupGitHubAuth()` — generates GitHub App installation tokens (JWT + token exchange) and pushes them to a sandbox via `POST /env`. Handles automatic token refresh.
 - `src/index.ts`: Public API surface.
 
 **`packages/sandbox-server`** — Fastify HTTP server that runs inside the container
@@ -42,7 +43,7 @@ This is a monorepo (`npm workspaces`) with two packages:
 - `src/middleware/auth.ts`: Optional Bearer token auth — only enforced if `AUTH_TOKEN` env var is set.
 - `src/services/exec.ts`: Spawns commands via `sh -c`, supports both buffered and SSE-streaming execution.
 - `src/services/files.ts`: File CRUD scoped to `WORKSPACE_DIR` with path traversal protection.
-- Routes under `src/routes/`: `GET /health`, `POST /exec`, `POST /exec/stream`, `GET|POST|DELETE /files`.
+- Routes under `src/routes/`: `GET /health`, `POST /exec`, `POST /exec/stream`, `GET|POST|DELETE /files`, `POST /env`.
 
 **Execution flow**: An AI agent instantiates `EcsSandboxManager`, calls `create()` to spin up an ECS Fargate task running the sandbox-server container, then uses the returned `SandboxClient` to exec commands and read/write files over HTTP. The server runs inside the VPC; only the client needs AWS credentials.
 

@@ -7,6 +7,7 @@ import { FilesService } from './services/files.js';
 import { execRoutes } from './routes/exec.js';
 import { filesRoutes } from './routes/files.js';
 import { healthRoutes } from './routes/health.js';
+import { envRoutes } from './routes/env.js';
 
 async function main() {
   const config = loadConfig();
@@ -29,6 +30,7 @@ async function main() {
   healthRoutes(app);
   execRoutes(app, execService);
   filesRoutes(app, filesService);
+  envRoutes(app);
 
   await app.listen({ port: config.port, host: config.host });
   console.log(`ecs-sandbox server listening on ${config.host}:${config.port}`);

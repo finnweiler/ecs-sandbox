@@ -19,6 +19,7 @@ export class SandboxClient {
   private baseUrl: string;
   private headers: Record<string, string>;
   private timeout: number;
+  private cleanupFns: Array<() => void> = [];
 
   constructor(baseUrl: string, options: SandboxClientOptions = {}) {
     this.baseUrl = baseUrl.replace(/\/$/, '');
@@ -28,6 +29,23 @@ export class SandboxClient {
       ...(options.authToken ? { Authorization: `Bearer ${options.authToken}` } : {}),
     };
     this.files = new SandboxFilesClient(this.baseUrl, this.headers, this.timeout);
+  }
+
+  /**
+   * Register a cleanup function to be called when this client is destroyed.
+   */
+  onCleanup(fn: () => void): void {
+    this.cleanupFns.push(fn);
+  }
+
+  /**
+   * Run all registered cleanup functions (e.g. stop auth token refresh timers).
+   */
+  destroy(): void {
+    for (const fn of this.cleanupFns) {
+      fn();
+    }
+    this.cleanupFns = [];
   }
 
   /**
@@ -93,6 +111,23 @@ export class SandboxClient {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Set environment variables on the sandbox. These persist for all subsequent exec calls.
+   */
+  async setEnv(vars: Record<string, string>): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/env`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ vars }),
+      signal: AbortSignal.timeout(this.timeout),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new SandboxError(`setEnv failed (${response.status})`, body);
     }
   }
 
