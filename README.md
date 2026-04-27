@@ -139,6 +139,22 @@ auth.stop();
 
 Tokens are refreshed automatically every 50 minutes (GitHub installation tokens expire after 1 hour). Call `auth.refresh()` to force an immediate refresh.
 
+#### Scoping the token
+
+By default the token grants access to every repository the installation can reach. To narrow it, pass any of `repositories`, `repositoryIds`, or `permissions`:
+
+```typescript
+const auth = await setupGitHubAuth(client, {
+  appId: '123456',
+  installationId: '78901234',
+  privateKey: readFileSync('private-key.pem', 'utf-8'),
+  repositories: ['repo-a', 'repo-b'],
+  permissions: { contents: 'read', pull_requests: 'write' },
+});
+```
+
+`repositories` / `repositoryIds` must be a subset of the repos the installation can access, and `permissions` must be a subset of what the App is granted.
+
 ## API Reference
 
 ### Sandbox Server Endpoints

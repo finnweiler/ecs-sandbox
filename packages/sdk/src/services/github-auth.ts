@@ -8,6 +8,15 @@ export interface GitHubAuthConfig {
   installationId: string;
   /** PEM-encoded private key */
   privateKey: string;
+  /**
+   * Scope the token to a subset of repositories by name (e.g. `["repo-a"]`).
+   * Must be a subset of repos the installation can access.
+   */
+  repositories?: string[];
+  /** Scope the token to a subset of repositories by numeric ID. */
+  repositoryIds?: number[];
+  /** Narrow the token's permissions to a subset of what the app is granted. */
+  permissions?: Record<string, string>;
 }
 
 export interface GitHubAuthHandle {
@@ -35,7 +44,11 @@ export async function setupGitHubAuth(
 ): Promise<GitHubAuthHandle> {
   async function pushToken() {
     const jwt = createJwt(config.appId, config.privateKey);
-    const token = await getInstallationToken(jwt, config.installationId);
+    const token = await getInstallationToken(jwt, config.installationId, {
+      repositories: config.repositories,
+      repositoryIds: config.repositoryIds,
+      permissions: config.permissions,
+    });
     await client.setEnv({ GH_TOKEN: token, GITHUB_TOKEN: token });
   }
 
@@ -95,7 +108,23 @@ function createJwt(appId: string, privateKeyPem: string): string {
   return `${signingInput}.${signature}`;
 }
 
-async function getInstallationToken(jwt: string, installationId: string): Promise<string> {
+interface InstallationTokenScope {
+  repositories?: string[];
+  repositoryIds?: number[];
+  permissions?: Record<string, string>;
+}
+
+async function getInstallationToken(
+  jwt: string,
+  installationId: string,
+  scope: InstallationTokenScope = {},
+): Promise<string> {
+  const body: Record<string, unknown> = {};
+  if (scope.repositories) body.repositories = scope.repositories;
+  if (scope.repositoryIds) body.repository_ids = scope.repositoryIds;
+  if (scope.permissions) body.permissions = scope.permissions;
+  const hasBody = Object.keys(body).length > 0;
+
   const url = `https://api.github.com/app/installations/${installationId}/access_tokens`;
   const response = await fetch(url, {
     method: 'POST',
@@ -104,7 +133,9 @@ async function getInstallationToken(jwt: string, installationId: string): Promis
       Accept: 'application/vnd.github+json',
       'User-Agent': 'ecs-sandbox',
       'X-GitHub-Api-Version': '2022-11-28',
+      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
     },
+    ...(hasBody ? { body: JSON.stringify(body) } : {}),
   });
 
   if (!response.ok) {
